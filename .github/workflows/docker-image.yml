@@ -23,7 +23,7 @@ jobs:
         
     - name: Build Docker Image
       run: |
-        docker build -t alorpes/cron-ticket:0.0.1 .
+        docker build -t alorpes/cron-ticket: .
         
     - name: Push Docker Image
       run: |
