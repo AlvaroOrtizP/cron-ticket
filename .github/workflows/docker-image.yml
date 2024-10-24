@@ -1,10 +1,15 @@
+#El name indica claramente el nombre de la imagen
 name: Docker Image CI
+
+#on: es el trigger que indica cuanod queremos que la accion se dispare
+#Por ejemplo que la accion se dispare cuando se haga un push a la rama main o un pull_request a main
 on:
   push:
     branches: [ "main" ]
   pull_request:
     branches: [ "main" ]
 
+#Los "jobs" son los trabajos que queremos realizar cuando ocurran los triggers.
 jobs:
   build:
     runs-on: ubuntu-latest
@@ -12,17 +17,29 @@ jobs:
       # Paso de checkout para obtener el código del repositorio
       - name: Check out the repository
         uses: actions/checkout@v2
+        with:
+          fetch-depth: 0
+
+      - name: Git Semantic Version
+        uses: PaulHatch/semantic-version@v4.0.3
+        with:
+          major_pattern: "major:"
+          minor_pattern: "feat:"
+          format: "${major}.${minor}.${patch}-prerelease${increment}"
+        id: version
 
       # Paso para hacer login en Docker Hub
       - name: Docker Login
         env:          
           DOCKER_USER: ${{ secrets.DOCKER_USER }}
           DOCKER_PASSWORD: ${{ secrets.DOCKER_PASSWORD }}
+          NEW_VERSION: ${{ steps.version.outputs.version }}
         run: |
           echo "$DOCKER_PASSWORD" | docker login -u "$DOCKER_USER" --password-stdin
+          echo "New version : $NEW_VERSION!!!!!"
 
       # Paso para construir y hacer push de la imagen de Docker
-      - name: Build and Push Docker Image
-        run: |
-          docker build -t alorpes/cron-ticket:0.0.1 .
-          docker push alorpes/cron-ticket:0.0.1
+     # - name: Build and Push Docker Image
+       #run: |
+          #docker build -t alorpes/cron-ticket:0.0.1 .
+          #docker push alorpes/cron-ticket:0.0.1
